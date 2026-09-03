@@ -1,97 +1,131 @@
-# Demonstração dos hooks do GitHub Copilot
+# Demonstração dos hooks do GitHub Copilot no VS Code
 
-Este repositório demonstra todos os eventos de hooks atualmente documentados
-para o GitHub Copilot. A configuração fica em
-`.github/hooks/log-all-events.json` e usa nomes de eventos em camelCase.
+Este repositório demonstra os oito eventos de hooks disponíveis no **Copilot
+Chat em Agent mode** no Visual Studio Code. Ele não é uma demonstração dos hooks
+do Copilot CLI.
 
-Cada hook envia seu payload JSON inalterado aos scripts pelo `stdin` e passa o
-nome do evento como primeiro argumento. As implementações equivalentes estão
-em `.github/scripts/log-copilot-hook.ps1` e
-`.github/scripts/log-copilot-hook.sh`. Cada execução acrescenta um registro ao
-arquivo `.github/logs/copilot-hooks.jsonl`, sem produzir saída em `stdout` nem
-retornar decisões que interfiram no Copilot.
+A configuração nativa fica em `.github/hooks/log-all-events.json`. Cada hook
+recebe seu payload JSON pelo `stdin` e passa o nome do evento ao script de
+logging. Há implementações equivalentes para os sistemas suportados:
 
-O arquivo JSONL pode conter prompts, argumentos e resultados de ferramentas,
-além de mensagens de erro e outros dados sensíveis. Ele é ignorado pelo Git,
-não deve ser publicado e este padrão de registro indiscriminado não deve ser
-usado em produção.
+- Windows: `.github/scripts/log-copilot-hook.ps1`
+- Linux e macOS: `.github/scripts/log-copilot-hook.sh`
 
-Alguns eventos só são disparados por ações específicas. A disponibilidade e o
-comportamento dos eventos também podem variar entre o Copilot CLI e o Copilot
-cloud agent; por isso, execute esta demonstração preferencialmente com o
-GitHub Copilot CLI.
+Cada execução acrescenta uma linha a `.github/logs/copilot-hooks.jsonl` no
+formato:
 
-## Como testar
-
-Os hooks deste repositório são carregados pelo GitHub Copilot CLI e pelo
-Copilot cloud agent. Apenas abrir o Copilot Chat no VS Code e enviar mensagens
-não testa esta configuração. O terminal integrado do VS Code pode ser usado,
-mas é necessário iniciar o GitHub Copilot CLI na raiz do repositório:
-
-```powershell
-copilot
+```json
+{"loggedAt":"2026-09-03T12:00:00.0000000+02:00","hook":"UserPromptSubmit","payload":{"session_id":"...","hook_event_name":"UserPromptSubmit","prompt":"..."}}
 ```
 
-Depois de alterar a configuração, inicie uma nova sessão do CLI. Em outro
-terminal do Windows, acompanhe os registros conforme forem criados:
+Os scripts não escrevem em `stdout` nem retornam decisões ao agente. Portanto,
+esta demo apenas observa os eventos, sem alterar ou bloquear o comportamento do
+Copilot.
 
-```powershell
-Get-Content .github\logs\copilot-hooks.jsonl -Wait
-```
+> [!WARNING]
+> O log pode conter prompts, caminhos, argumentos e resultados de ferramentas,
+> além de outros dados sensíveis. O arquivo JSONL é ignorado pelo Git e não deve
+> ser publicado. Não use este logging indiscriminado em produção.
 
-Use os exemplos abaixo dentro da sessão do Copilot CLI:
+## Eventos registrados
 
-1 - Para disparar normalmente `userPromptSubmitted`, `userPromptTransformed` e
-`agentStop`, use o seguinte prompt:
+Todos os payloads incluem `timestamp` e `hook_event_name` e podem incluir `cwd`,
+`session_id` e `transcript_path`. Os principais campos específicos são:
 
-```text
-Explique em uma frase qual é o objetivo deste repositório.
-```
+| Evento | Quando ocorre | Campos específicos |
+| --- | --- | --- |
+| `SessionStart` | No início de uma nova sessão, ao enviar o primeiro prompt | `source` |
+| `UserPromptSubmit` | Ao enviar um prompt | `prompt` |
+| `PreToolUse` | Antes de o agente invocar uma ferramenta | `tool_name`, `tool_input`, `tool_use_id` |
+| `PostToolUse` | Depois de uma ferramenta concluir com sucesso | `tool_name`, `tool_input`, `tool_use_id`, `tool_response` |
+| `PreCompact` | Antes da compactação do contexto da conversa | `trigger` |
+| `SubagentStart` | Quando um subagente é iniciado | `agent_id`, `agent_type` |
+| `SubagentStop` | Quando um subagente conclui | `agent_id`, `agent_type`, `stop_hook_active` |
+| `Stop` | Quando a execução atual do agente termina | `stop_hook_active` |
 
-2 - Para disparar `preToolUse` e `postToolUse`, use o seguinte prompt:
+`Stop` não significa que o chat foi fechado ou ficou inativo. Ele ocorre quando
+a execução atual do agente termina, normalmente após concluir a resposta a um
+prompt.
 
-```text
-Liste os arquivos deste repositório e leia o README.md.
-```
+## Pré-requisitos
 
-3 - Para tentar disparar `permissionRequest`, use o seguinte prompt:
+- Uma versão do VS Code e do GitHub Copilot que ofereça suporte a agent hooks.
+- Acesso ao Copilot Chat em **Agent mode**.
+- Hooks permitidos pelas políticas da organização.
+- PowerShell no Windows ou Bash com `awk` no Linux e macOS.
 
-```text
-Crie um arquivo chamado teste-permissao.txt com o texto "teste de hook".
-```
+Agent hooks ainda estão em **Preview**. O formato e o comportamento podem mudar,
+e a organização pode desabilitar o recurso por política.
 
-A solicitação depende das regras de permissão e das aprovações já concedidas na
-sessão.
+## Como executar a demonstração
 
-4 - Para disparar `subagentStart` e `subagentStop`, use o seguinte prompt:
+1. Abra a raiz deste repositório no VS Code.
+2. Abra o Copilot Chat e selecione **Agent** no seletor de modo.
+3. Em outro terminal, acompanhe o arquivo de log:
 
-```text
-Use um subagente para analisar este README e resumir os principais pontos.
-```
+   Windows:
 
-Esses eventos serão disparados quando o CLI decidir executar a tarefa por meio
-de um subagente.
+   ```powershell
+   Get-Content .github\logs\copilot-hooks.jsonl -Wait
+   ```
 
-5 - Para disparar `preCompact`, execute:
+   Linux ou macOS:
 
-```text
-/compact
-```
+   ```bash
+   tail -f .github/logs/copilot-hooks.jsonl
+   ```
 
-6 - Para disparar `sessionEnd`, encerre o CLI executando:
+4. Inicie um chat novo e envie:
 
-```text
-/exit
-```
+   ```text
+   Explique em uma frase qual é o objetivo deste repositório.
+   ```
 
-Também é possível encerrar o CLI com `Ctrl+C`.
+   O primeiro prompt de um chat novo demonstra `SessionStart`,
+   `UserPromptSubmit` e `Stop`.
 
-Eventos como `errorOccurred`, `postToolUseFailure` e `notification` dependem de
-condições específicas e podem não aparecer em uma execução normal. Agrupe os
-registros de uma mesma conversa pelo campo `payload.sessionId`; use
-`payload.timestamp` para ordená-los pelo instante em que o Copilot gerou cada
-evento.
+5. Para demonstrar `PreToolUse` e `PostToolUse`, envie:
 
-Consulte a
-[referência oficial de hooks](https://docs.github.com/en/copilot/reference/hooks-reference)
-para detalhes dos eventos e payloads.
+   ```text
+   Liste os arquivos deste repositório e leia o README.md.
+   ```
+
+   Esses eventos podem aparecer várias vezes, uma vez para cada ferramenta
+   utilizada. `PostToolUse` só ocorre quando a ferramenta conclui com sucesso.
+
+6. Para tentar demonstrar `SubagentStart` e `SubagentStop`, envie:
+
+   ```text
+   Use um subagente para analisar este README e resumir os principais pontos.
+   ```
+
+   Esses eventos só ocorrem se o agente realmente delegar a tarefa a um
+   subagente; a disponibilidade dessa capacidade depende do ambiente.
+
+`PreCompact` normalmente só aparece quando a conversa cresce o suficiente para
+que o VS Code compacte o contexto automaticamente. Não há uma ação manual
+equivalente necessária para esta demo, então o evento pode não ocorrer durante
+uma execução curta.
+
+Agrupe os registros de uma conversa por `payload.session_id` e ordene-os por
+`payload.timestamp`.
+
+## Diagnóstico
+
+Se nenhum registro for criado:
+
+1. Confirme que a pasta aberta no VS Code é a raiz deste repositório.
+2. Confira a execução dos hooks no canal de saída **GitHub Copilot Hooks**.
+3. Execute **Developer: Show Agent Debug Logs** pela Paleta de Comandos.
+4. Verifique se a política da organização permite hooks.
+5. Salve novamente `.github/hooks/log-all-events.json`; o VS Code carrega
+   alterações nos arquivos de hooks automaticamente.
+
+Somente a configuração nativa deste arquivo deve permanecer ativa em
+`.github/hooks/`. Manter também uma configuração compatível com o Copilot CLI
+pode fazer eventos suportados serem executados duas vezes.
+
+Consulte a documentação oficial:
+
+- [Agent hooks no VS Code](https://code.visualstudio.com/docs/agent-customization/hooks)
+- [Referência de hooks](https://code.visualstudio.com/docs/agents/reference/hooks-reference)
