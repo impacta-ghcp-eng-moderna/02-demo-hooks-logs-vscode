@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "hooks": {
+    "agentStop": [
+      {
+        "type": "command",
+        "powershell": "& \".github/scripts/log-copilot-hook.ps1\" \"agentStop\"",
+        "bash": "bash \".github/scripts/log-copilot-hook.sh\" \"agentStop\"",
+        "timeoutSec": 10
+      }
+    ],
+    "errorOccurred": [
+      {
+        "type": "command",
+        "powershell": "& \".github/scripts/log-copilot-hook.ps1\" \"errorOccurred\"",
+        "bash": "bash \".github/scripts/log-copilot-hook.sh\" \"errorOccurred\"",
+        "timeoutSec": 10
+      }
+    ],
+    "notification": [
+      {
+        "type": "command",
+        "powershell": "& \".github/scripts/log-copilot-hook.ps1\" \"notification\"",
+        "bash": "bash \".github/scripts/log-copilot-hook.sh\" \"notification\"",
+        "timeoutSec": 10
+      }
+    ],
+    "permissionRequest": [
+      {
+        "type": "command",
+        "powershell": "& \".github/scripts/log-copilot-hook.ps1\" \"permissionRequest\"",
+        "bash": "bash \".github/scripts/log-copilot-hook.sh\" \"permissionRequest\"",
+        "timeoutSec": 10
+      }
+    ],
+    "postToolUse": [
+      {
+        "type": "command",
+        "powershell": "& \".github/scripts/log-copilot-hook.ps1\" \"postToolUse\"",
+        "bash": "bash \".github/scripts/log-copilot-hook.sh\" \"postToolUse\"",
+        "timeoutSec": 10
+      }
+    ],
+    "postToolUseFailure": [
+      {
+        "type": "command",
+        "powershell": "& \".github/scripts/log-copilot-hook.ps1\" \"postToolUseFailure\"",
+        "bash": "bash \".github/scripts/log-copilot-hook.sh\" \"postToolUseFailure\"",
+        "timeoutSec": 10
+      }
+    ],
+    "preCompact": [
+      {
+        "type": "command",
+        "powershell": "& \".github/scripts/log-copilot-hook.ps1\" \"preCompact\"",
+        "bash": "bash \".github/scripts/log-copilot-hook.sh\" \"preCompact\"",
+        "timeoutSec": 10
+      }
+    ],
+    "preToolUse": [
+      {
+        "type": "command",
+        "powershell": "& \".github/scripts/log-copilot-hook.ps1\" \"preToolUse\"",
+        "bash": "bash \".github/scripts/log-copilot-hook.sh\" \"preToolUse\"",
+        "timeoutSec": 10
+      }
+    ],
+    "sessionEnd": [
+      {
+        "type": "command",
+        "powershell": "& \".github/scripts/log-copilot-hook.ps1\" \"sessionEnd\"",
+        "bash": "bash \".github/scripts/log-copilot-hook.sh\" \"sessionEnd\"",
+        "timeoutSec": 10
+      }
+    ],
+    "sessionStart": [
+      {
+        "type": "command",
+        "powershell": "& \".github/scripts/log-copilot-hook.ps1\" \"sessionStart\"",
+        "bash": "bash \".github/scripts/log-copilot-hook.sh\" \"sessionStart\"",
+        "timeoutSec": 10
+      }
+    ],
+    "subagentStart": [
+      {
+        "type": "command",
+        "powershell": "& \".github/scripts/log-copilot-hook.ps1\" \"subagentStart\"",
+        "bash": "bash \".github/scripts/log-copilot-hook.sh\" \"subagentStart\"",
+        "timeoutSec": 10
+      }
+    ],
+    "subagentStop": [
+      {
+        "type": "command",
+        "powershell": "& \".github/scripts/log-copilot-hook.ps1\" \"subagentStop\"",
+        "bash": "bash \".github/scripts/log-copilot-hook.sh\" \"subagentStop\"",
+        "timeoutSec": 10
+      }
+    ],
+    "userPromptSubmitted": [
+      {
+        "type": "command",
+        "powershell": "& \".github/scripts/log-copilot-hook.ps1\" \"userPromptSubmitted\"",
+        "bash": "bash \".github/scripts/log-copilot-hook.sh\" \"userPromptSubmitted\"",
+        "timeoutSec": 10
+      }
+    ],
+    "userPromptTransformed": [
+      {
+        "type": "command",
+        "powershell": "& \".github/scripts/log-copilot-hook.ps1\" \"userPromptTransformed\"",
+        "bash": "bash \".github/scripts/log-copilot-hook.sh\" \"userPromptTransformed\"",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}
